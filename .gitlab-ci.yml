@@ -1,0 +1,94 @@
+#using docker maven image
+image: maven
+
+before_script:
+  - echo "Pipleine Started"
+
+
+# pipeline stages build, test, deploy
+stages:
+  - build
+  - test
+  - deploy
+
+# build stage
+ams-build-job:
+  stage: build
+  tags:
+    - development
+  environment:
+    name: Development
+  script:
+    - echo "Building latest push"
+    - mvn package
+    - echo "Building completed"
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    refs:
+      - master
+      - development
+      - /(.|\n)*?-feature/
+      - hotfix
+      - release
+
+#test stage
+ams-test-job:
+
+  stage: test
+  tags:
+    - development
+  environment:
+    name: Test
+  script:
+    - echo "Running unit tests"
+    - mvn test
+    - echo "Unit tests completed"
+  only:
+    refs:
+      - master
+      - development
+      - /(.|\n)*?-feature/
+      - hotfix
+      - release
+
+
+
+
+ams-deploy-test-job:
+
+
+  stage: deploy
+  tags:
+    - development
+  environment:
+    name: Test
+  script:
+    - echo "Deploying from development branch"
+    - mvn package
+    - bash deploy-script -u=$test_url -U=$test_username -p=$test_password -f=$test_filepath
+
+  only:
+    refs:
+      - development
+
+ams-deploy-production-job:
+
+
+  stage: deploy
+  tags:
+    - development
+  environment:
+    name: Production
+  script:
+    - echo "Deploying from master branch"
+    - mvn package
+    - bash deploy-script -u=$production_url -U=$production_username -p=$production_password -f=$production_filepath
+
+  only:
+    refs:
+      - master
+
+after_script:
+  - echo "pipeline fininsed"

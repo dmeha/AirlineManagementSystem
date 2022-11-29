@@ -1,0 +1,25 @@
+#!/bin/bash
+for arg in "$@"
+do
+case $arg in
+    -u=*|--url=*)
+    URL="${arg#*=}"
+    ;;
+    -U=*|--username=*)
+    USERNAME="${arg#*=}"
+    ;;
+    -p=*|--password=*)
+    PASSWORD="${arg#*=}"
+    ;;
+    -f=*|--filepath=*)
+        FILEPATH="${arg#*=}"
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+done
+
+
+curl -k "${URL}" --user "${USERNAME}:${PASSWORD}" -T "${FILEPATH}"
+echo "JAR file Deployed to ${URL}"
